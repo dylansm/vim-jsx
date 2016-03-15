@@ -29,10 +29,9 @@ endif
 "   - jelera/vim-javascript-syntax: javascriptBlock
 "   - othree/yajs.vim:              javascriptNoReserved
 
-
 " JSX attributes should color as JS.  Note the trivial end pattern; we let
 " jsBlock take care of ending the region.
-syn region xmlString contained start=+{+ end=++ contains=jsBlock,javascriptBlock
+syn region xmlString contained start=+{+ end=+}+ contains=jsBlock,javascriptBlock
 
 " JSX child blocks behave just like JSX attributes, except that (a) they are
 " syntactically distinct, and (b) they need the syn-extend argument, or else
@@ -45,8 +44,16 @@ syn region jsxChild contained start=+{+ end=++ contains=jsBlock,javascriptBlock
 " Note that we prohibit JSX tags from having a < or word character immediately
 " preceding it, to avoid conflicts with, respectively, the left shift operator
 " and generic Flow type annotations (http://flowtype.org/).
+" syn region jsxRegion
+  " \ contains=@XMLSyntax,jsxRegion,jsxChild,jsBlock,jsComment,jsCommentDelim,javascriptBlock,jsxComment,jsxCommentDelim
+  " \ start=+\%(<\|\w\)\@<!<\z([a-zA-Z][a-zA-Z0-9:\-.]*\)+
+  " \ skip=+<!--\_.\{-}-->+
+  " \ end=+</\z1\_\s\{-}>+
+  " \ end=+/>+
+  " \ keepend
+  " \ extend
 syn region jsxRegion
-  \ contains=@XMLSyntax,jsxRegion,jsxChild,jsBlock,javascriptBlock
+  \ contains=@XMLSyntax,jsxRegion,jsxChild,jsBlock,jsBraces,jsComment,jsCommentDelim,javascriptBlock,jsxComment,jsxCommentDelim
   \ start=+\%(<\|\w\)\@<!<\z([a-zA-Z][a-zA-Z0-9:\-.]*\)+
   \ skip=+<!--\_.\{-}-->+
   \ end=+</\z1\_\s\{-}>+
@@ -54,8 +61,14 @@ syn region jsxRegion
   \ keepend
   \ extend
 
+syn region  xmlString contained start=+{+ end=+}+ contains=xmlEntity,@Spell display
+
 " Add jsxRegion to the lowest-level JS syntax cluster.
 syn cluster jsExpression add=jsxRegion
 
 " Allow jsxRegion to contain reserved words.
 syn cluster javascriptNoReserved add=jsxRegion
+
+" syn region jsxComment matchgroup=twigCommentDelim start="{/*" end="*/}" containedin=ALLBUT,twigTagBlock,twigVarBlock,twigString
+syn region jsxComment matchgroup=jsxCommentDelim start="\V{/*" end="\V*/}" containedin=jsxRegion,jsxChild
+
